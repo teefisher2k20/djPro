@@ -684,7 +684,6 @@ const App: React.FC = () => {
             onCueToggle={handleCueToggle}
             onDropTrack={handleDropTrackToDeck} // Pass to Deck
             onLoadSample={handleLoadSample}
-            {/* Removed: onLoadTrackAsSample={handleSelectTrackAsSample} // Pass new handler */}
             onOpenSampleLibrary={handleOpenSampleLibrary} // Pass new handler
             onPlayPauseSample={handlePlayPauseSample}
             onToggleSampleMode={handleToggleSampleMode}
@@ -705,7 +704,6 @@ const App: React.FC = () => {
             onCueToggle={handleCueToggle}
             onDropTrack={handleDropTrackToDeck} // Pass to Deck
             onLoadSample={handleLoadSample}
-            {/* Removed: onLoadTrackAsSample={handleSelectTrackAsSample} // Pass new handler */}
             onOpenSampleLibrary={handleOpenSampleLibrary} // Pass new handler
             onPlayPauseSample={handlePlayPauseSample}
             onToggleSampleMode={handleToggleSampleMode}
