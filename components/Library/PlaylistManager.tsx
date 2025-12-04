@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Playlist } from '../../types';
 
@@ -60,6 +59,12 @@ const PlaylistManager: React.FC<PlaylistManagerProps> = ({
             className={`w-full text-left p-2 rounded-md transition-colors ${!selectedPlaylistId ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
         >
             All Tracks
+        </button>
+        <button
+            onClick={() => onSelectPlaylist('MOBILE_IMPORTS')}
+            className={`w-full text-left p-2 rounded-md transition-colors mt-1 flex items-center gap-2 ${selectedPlaylistId === 'MOBILE_IMPORTS' ? 'bg-indigo-600' : 'hover:bg-gray-700'}`}
+        >
+            <span>📱</span> Mobile Imports
         </button>
         {playlists.map((playlist) => (
           <div

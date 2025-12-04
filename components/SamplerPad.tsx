@@ -5,7 +5,6 @@ interface SamplerPadProps {
   sample: Sample | null;
   slotIndex: number;
   onLoadSample: (slotIndex: number, file: File) => void;
-  // Removed: onLoadTrackAsSample: (track: Track) => void; // New prop for loading from library
   onOpenSampleLibrary: (deckId: string, slotIndex: number) => void; // New prop to open modal
   onPlayPause: (slotIndex: number) => void;
   onToggleMode: (slotIndex: number) => void;
@@ -20,7 +19,6 @@ const SamplerPad: React.FC<SamplerPadProps> = ({
   sample,
   slotIndex,
   onLoadSample,
-  // Removed: onLoadTrackAsSample, // Destructure new prop
   onOpenSampleLibrary, // Destructure new prop
   onPlayPause,
   onToggleMode,

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
-import { ChatMessage } from "../types";
+import { ChatMessage, Track } from "../types";
 
 // Assume process.env.API_KEY is available in the Electron environment
 // This will be injected by the Electron main process or by a build tool
@@ -27,7 +27,7 @@ export const initChat = (): void => {
       model: 'gemini-2.5-flash',
       config: {
         // You can add system instructions here if needed for specific chatbot personality
-        // systemInstruction: 'You are a helpful assistant for DJs, providing tips, track suggestions, and technical advice.',
+        systemInstruction: 'You are a professional DJ mentor and AI mixing assistant. You are concise, cool, and technically accurate.',
       },
     });
     console.log("Gemini chat session initialized.");
@@ -78,6 +78,53 @@ export const sendMessageToGemini = async (
         currentChatHistory.pop();
     }
   }
+};
+
+/**
+ * Exclusive Feature: "Gemini Sonic Match"
+ * Analyzes the current track and the library to suggest the next track.
+ */
+export const getSonicMatchRecommendation = async (
+    currentTrack: Track,
+    library: Track[],
+    onChunk: (chunk: string) => void,
+    onComplete: (fullResponse: string) => void,
+    onError: (error: Error) => void
+): Promise<void> => {
+    if (!ai) initChat();
+    
+    // Create a simplified representation of the library to save tokens
+    const simplifiedLibrary = library.map(t => ({
+        id: t.id,
+        name: t.name,
+        artist: t.artist,
+        bpm: t.bpm,
+        key: t.key,
+        genre: t.genre,
+        rating: t.rating
+    })).filter(t => t.id !== currentTrack.id); // Exclude current track
+
+    // Construct a specific prompt
+    const prompt = `
+      I am currently playing:
+      Track: "${currentTrack.name}" by ${currentTrack.artist || 'Unknown'}
+      BPM: ${currentTrack.bpm || 'Unknown'}
+      Key: ${currentTrack.key || 'Unknown'}
+      Genre: ${currentTrack.genre || 'Unknown'}
+
+      Here is my library:
+      ${JSON.stringify(simplifiedLibrary.slice(0, 50))} 
+      (List truncated to top 50 for speed if necessary)
+
+      Please act as "Gemini Sonic Match". Analyze the vibe, energy, key compatibility (Camelot wheel), and BPM of the playing track.
+      Recommend the top 2 best tracks from the library to mix next. 
+      For each recommendation, give a "Sonic Match Score" (0-100%) and a one-sentence technical explanation of why it works (e.g., "Harmonic mix + energy boost").
+      Format the output clearly with bold track names.
+    `;
+
+    // We use the existing chat session to maintain context, or we could use generateContent for a one-off.
+    // Using chat allows the user to follow up ("Why that one?").
+    await sendMessageToGemini(prompt, onChunk, onComplete, onError);
 };
 
 /**

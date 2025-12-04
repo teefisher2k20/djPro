@@ -1,12 +1,13 @@
+
 import sqlite3 from 'sqlite3';
-import { open, Database, Statement } from 'sqlite'; // Import Statement
+import { open, Database } from 'sqlite'; 
 import path from 'path';
 import { app } from 'electron'; // Electron's app for user data path
 import { Track, Playlist, LibraryFilters } from '../types';
 
 export class DatabaseService {
-  // Fix: Explicitly type `db` with generic parameters for sqlite.Database and Statement
-  private db: Database<sqlite3.Database, Statement> | null = null;
+  // Fix: Explicitly type `db` with generic parameters for sqlite.Database and sqlite3.Statement (the driver statement)
+  private db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
   private dbPath: string;
 
   constructor() {
@@ -160,6 +161,11 @@ export class DatabaseService {
       sql += ' AND rating >= ?';
       params.push(filters.ratingMin);
     }
+    if (filters.tag) {
+      // Simple string match in JSON array string
+      sql += ' AND tags LIKE ?';
+      params.push(`%${filters.tag}%`);
+    }
 
     // Fix: db.all now correctly accepts type arguments after `db` is properly typed
     const rows = await this.db!.all(sql + ' ORDER BY name COLLATE NOCASE', params) as Track[];
@@ -172,8 +178,8 @@ export class DatabaseService {
 
   async getPlaylists(): Promise<Playlist[]> {
     if (!this.db) await this.init();
-    // Fix: db.all now correctly accepts type arguments after `db` is properly typed
-    return this.db!.all('SELECT * FROM playlists ORDER BY name COLLATE NOCASE') as Playlist[];
+    // Fix: await the promise before casting
+    return (await this.db!.all('SELECT * FROM playlists ORDER BY name COLLATE NOCASE')) as Playlist[];
   }
 
   async createPlaylist(name: string): Promise<void> {

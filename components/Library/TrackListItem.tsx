@@ -90,6 +90,10 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   }, [track.duration]);
 
+  const isMobileImport = useMemo(() => {
+      return track.tags?.includes('Mobile Import');
+  }, [track.tags]);
+
   return (
     <div
       className="bg-gray-700 p-3 rounded-md mb-2 flex flex-col border border-gray-600 cursor-grab"
@@ -108,7 +112,10 @@ const TrackListItem: React.FC<TrackListItemProps> = ({
               className="text-lg font-semibold bg-gray-600 px-1 rounded"
             />
           ) : (
-            <h4 className="text-lg font-semibold text-blue-300 truncate">{track.name}</h4>
+            <h4 className="text-lg font-semibold text-blue-300 truncate flex items-center">
+                {isMobileImport && <span className="mr-2 text-indigo-400 text-xs" title="Imported from Mobile Device">📱</span>}
+                {track.name}
+            </h4>
           )}
           {isEditing ? (
             <input

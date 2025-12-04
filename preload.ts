@@ -1,28 +1,9 @@
+
 import { contextBridge, ipcRenderer } from 'electron';
 import { Track, Playlist, LibraryFilters } from './types'; // Shared types
 import * as fs from 'fs'; // Node.js fs module is available here in preload for `readFile`
 
-declare global {
-  interface Window {
-    electronAPI: {
-      getTracks: () => Promise<Track[]>;
-      saveTrack: (track: Track) => Promise<void>;
-      updateTrack: (track: Partial<Track>) => Promise<void>;
-      deleteTrack: (trackId: string) => Promise<void>;
-      searchTracks: (query: string, filters: LibraryFilters) => Promise<Track[]>;
-      getPlaylists: () => Promise<Playlist[]>;
-      createPlaylist: (name: string) => Promise<void>;
-      deletePlaylist: (playlistId: string) => Promise<void>;
-      addTrackToPlaylist: (playlistId: string, trackId: string) => Promise<void>;
-      removeTrackFromPlaylist: (playlistId: string, trackId: string) => Promise<void>;
-      getTracksInPlaylist: (playlistId: string) => Promise<Track[]>;
-      openDirectoryDialog: () => Promise<string[]>;
-      openFileDialog: () => Promise<string[]>;
-      readFileAsArrayBuffer: (filePath: string) => Promise<ArrayBuffer>;
-      readAudioFilesFromDirectory: (dirPath: string) => Promise<string[]>;
-    };
-  }
-}
+// Type definitions are in types.ts via global declaration, but we implement them here.
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getTracks: () => ipcRenderer.invoke('db:getTracks'),
@@ -44,10 +25,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
         if (err) {
           reject(err);
         } else {
-          resolve(data.buffer);
+          // Fix: Ensure we return the correct view of the buffer using slice
+          // Node's buffer.buffer might reference a shared pool.
+          const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+          resolve(arrayBuffer);
         }
       });
     });
   },
   readAudioFilesFromDirectory: (dirPath: string) => ipcRenderer.invoke('fs:readAudioFilesFromDirectory', dirPath),
+  downloadFile: (url: string) => ipcRenderer.invoke('fs:downloadFile', url),
 });
